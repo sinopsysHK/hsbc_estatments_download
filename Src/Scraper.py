@@ -67,18 +67,22 @@ class Scraper:
         rows = page.get_rows_buttons()
         downloaded_files = []
         if (self.type == 'm' or self.type == self.DEFAULT_CURRENT):
-            date_file = [key for key in rows.keys() if self.month_year_str in key.replace(' ', '-')][0]
-            fdpath = self.click_download(
-                download_type,
-                date_file,
-                rows[date_file],
-                driver,
-                account
-            )
-            if fdpath is None:
-                log.error("failed to download file")
+            date_file = [key for key in rows.keys() if self.month_year_str in key.replace(' ', '-')]
+            if len(date_file) > 0:
+                date_file = date_file[0]
+                fdpath = self.click_download(
+                    download_type,
+                    date_file,
+                    rows[date_file],
+                    driver,
+                    account
+                )
+                if fdpath is None:
+                    log.error("failed to download file")
+                else:
+                    downloaded_files.append(fdpath)
             else:
-                downloaded_files.append(fdpath)
+                log.info("statement for %s %s not (yet) available", account, self.month_year_str)
         elif self.type == 'a':
             errors = 0
             for k, v in rows.items():
@@ -292,3 +296,4 @@ class Scraper:
         log.info("processing done")
         # close main window
         driver.close()
+        driver.quit()

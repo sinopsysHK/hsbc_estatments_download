@@ -70,7 +70,8 @@ class MyBankingPage(BasePage):
             ".confirmLeave button[data-dojo-attach-point='leaveDialogBtn'][tabindex='0'][type='button']"
         ),
         "main_menu": (By.ID, "dijit__WidgetBase_0"),
-        "menu_statement": (By.LINK_TEXT, "View/Manage documents")
+        "menu_statement": (By.LINK_TEXT, "View/Manage documents"),
+        "menu_accounts": (By.LINK_TEXT, "My accounts")
     }
 
     def goto_old_page(self):
@@ -85,6 +86,14 @@ class MyBankingPage(BasePage):
         WebDriverWait(self.driver, 15).until(EC.title_contains("Statements"))
         sleep(4)
         log.debug("moved to statement page")
+
+    def goto_myaccounts(self):
+        self.main_menu.click()
+        self.menu_accounts.click()
+        WebDriverWait(self.driver, 15).until(EC.title_contains("My banking"))
+        sleep(4)
+        log.debug("moved to accounts page")
+
 
     class StatementPage(BasePage):
 
@@ -105,7 +114,7 @@ class MyBankingPage(BasePage):
             "account_selector": (By.ID, "arrowid_group_gpib_newstmt_bijit_AccountSelect_0"),
             "acc_list_container": (By.ID, "group_gpib_newstmt_bijit_AccountSelect_0_menu"),
             "accounts_list": (By.CSS_SELECTOR, "tr.dijitMenuItem"),
-            "acc_item_type": (By.CSS_SELECTOR, "span[class='title cobrowse_hide']"),
+            "acc_item_type": (By.CSS_SELECTOR, "span[class='title stmtCurrencyDropDownTitle cobrowse_hide']"),
             "acc_item_number": (By.CSS_SELECTOR, "span[class='accountDetails cobrowse_hide']"),
 
             "st_row": (By.CSS_SELECTOR, "div[class='row statementListItem']"),
@@ -151,6 +160,8 @@ class MyBankingPage(BasePage):
             action = ActionChains(self.driver)
             action.move_to_element(self.accounts[account]).click().perform()
             sleep(5)
+            log.debug("...account selected")
+
 
         def select_card(self, card):
             if self.accounts is None:
@@ -160,15 +171,19 @@ class MyBankingPage(BasePage):
             action = ActionChains(self.driver)
             action.move_to_element(self.cards[card]).click().perform()
             sleep(2)
+            log.debug("...card selected")
 
         def get_rows_buttons(self):
             result = {}
-            if self.view_more.is_displayed:
-                self.view_more.click()
-                sleep(5)
+            #if self.view_more.is_displayed:
+            #    log.debug("there are more to display")
+            #    self.view_more.click()
+            #    sleep(5)
             rows = self.find_elements(*self.locator_dictionary['st_row'])
+            log.debug("found %d rows", len(rows))
             for r in rows:
                 row_date = r.find_element(*self.locator_dictionary['st_row_date']).get_attribute("innerHTML")
                 row_button = r.find_element(*self.locator_dictionary['st_row_button'])
                 result[row_date] = row_button
+            log.debug("found %d statements", len(result))
             return result
